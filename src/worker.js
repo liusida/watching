@@ -3,6 +3,7 @@
 const { createApp } = require("./app");
 const { loadTasksDocument, syncTasksFromDocument } = require("./repositories/tasks");
 const { runDueTasks } = require("./scheduler");
+const { validateEnvForRun } = require("./validate-task");
 
 async function tick() {
   const app = createApp();
@@ -12,23 +13,29 @@ async function tick() {
     taskCount: refreshedDocument.tasks?.length || 0,
   });
 
-  const results = await runDueTasks({
-    db: app.db,
-    tasks: refreshedDocument.tasks || [],
-    serpApiClient: app.serpApiClient,
-    openAIClient: app.openAIClient,
-    notifier: app.notifier,
-    modelName: app.config.openaiModel,
-    log: app.logger,
-  });
+  try {
+    const results = await runDueTasks({
+      db: app.db,
+      tasks: refreshedDocument.tasks || [],
+      serpApiClient: app.serpApiClient,
+      openAIClient: app.openAIClient,
+      notifier: app.notifier,
+      modelName: app.config.openaiModel,
+      log: app.logger,
+    });
 
-  if (results.length === 0) {
-    app.logger.info("No tasks were due on this tick.");
+    if (results.length === 0) {
+      app.logger.info("No tasks were due on this tick.");
+    }
+  } finally {
+    await app.notifier.disconnect();
   }
 }
 
 async function main() {
   const app = createApp();
+  validateEnvForRun(app.config);
+
   let tickInProgress = false;
   app.logger.info("Watching worker started.", {
     pollIntervalMs: app.config.pollIntervalMs,

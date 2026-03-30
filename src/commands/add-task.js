@@ -17,6 +17,7 @@ function printUsage() {
       "",
       "Notes:",
       "  - Generates a query plan with OpenAI and stores it in config/tasks.json.",
+      "  - Pass --destination with a WhatsApp user or group JID (e.g. from list-whatsapp-groups) for notify; or set notify.destination in tasks.json later.",
       "  - Use --replace to overwrite an existing task with the same name.",
     ].join("\n")
   );
@@ -61,7 +62,7 @@ async function main() {
         locale: args.locale || app.config.defaultLocale,
         enabled: args.enabled !== "false",
         notify: {
-          destination: args.destination || app.config.whatsappJid || "",
+          destination: args.destination || "",
         },
       },
       app.config

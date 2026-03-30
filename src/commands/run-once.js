@@ -2,6 +2,7 @@
 
 const { createApp } = require("../app");
 const { runTask } = require("../task-runner");
+const { validateEnvForRun, validateRunnableTask } = require("../validate-task");
 const { parseArgs } = require("../utils");
 
 function printUsage() {
@@ -25,6 +26,7 @@ async function main() {
   }
 
   const app = createApp();
+  validateEnvForRun(app.config);
 
   try {
     let tasks = app.taskDocument.tasks || [];
@@ -48,6 +50,7 @@ async function main() {
     });
 
     for (const task of tasks) {
+      validateRunnableTask(task);
       console.log(`Running task "${task.name}"...`);
       const result = await runTask({
         db: app.db,
@@ -61,6 +64,11 @@ async function main() {
       console.log(JSON.stringify(result, null, 2));
     }
   } finally {
+    try {
+      await app.notifier.disconnect();
+    } catch (err) {
+      app.logger.warn("Notifier disconnect failed (non-fatal).", { error: err.message });
+    }
     app.db.close();
   }
 }

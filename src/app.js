@@ -3,7 +3,7 @@ const { getDb } = require("./db");
 const { loadTasksDocument, syncTasksFromDocument } = require("./repositories/tasks");
 const { SerpApiClient } = require("./providers/serpapi");
 const { OpenAIClient } = require("./providers/openai");
-const { BaileysNotifier } = require("./providers/baileys");
+const { BaileysNotifier } = require("../whatsapp-kit");
 const { createLogger } = require("./logger");
 
 function createApp() {
@@ -26,7 +26,7 @@ function createApp() {
   );
   const notifier = new BaileysNotifier({
     authPath: config.baileysAuthPath,
-    defaultDestination: config.whatsappJid,
+    defaultDestination: "",
     dryRun: config.dryRunNotify,
     logger: createLogger("baileys", loggerOptions),
   });

@@ -17,7 +17,7 @@ function buildQueryPlanSchema(defaults) {
         queries: {
           type: "array",
           minItems: 1,
-          maxItems: 8,
+          maxItems: 1,
           items: {
             type: "object",
             additionalProperties: false,
@@ -63,7 +63,7 @@ function buildQueryPlanMessages(taskInput, defaults) {
     {
       role: "system",
       content:
-        "You generate practical search plans for a personal monitoring task. Focus on search recall without becoming overly broad. Prefer a small set of useful search queries that can run on SerpApi. Use google_news unless the task clearly needs generic web search.",
+        "You generate search plans for a personal monitoring task. Emit **exactly one** query string per plan (one SerpApi call per run). Make that single query specific enough for google_news recall without being redundant. Use google_news unless the task clearly needs generic web search.",
     },
     {
       role: "user",
@@ -75,7 +75,7 @@ function buildQueryPlanMessages(taskInput, defaults) {
         `Preferred country: ${defaults.defaultCountry}`,
         `Default engine: ${defaults.defaultEngine}`,
         `Default max results per query: ${defaults.defaultMaxResults}`,
-        "Return a compact plan with several query variants, using multilingual terms only when they materially improve recall.",
+        "Return one combined query only (the queries array must have length 1).",
       ].join("\n"),
     },
   ];
@@ -86,7 +86,10 @@ function buildDecisionMessages(task, candidate) {
     {
       role: "system",
       content:
-        "You evaluate whether a search result is worth notifying the user about. Be conservative: only mark match=true when the result is clearly relevant to the task goal and criteria.",
+        "You evaluate whether a search result is worth notifying the user about. Be conservative. " +
+        "match=true with confidence high only when the article (title/snippet implied meaning) satisfies the task criteria as written — not merely the same topic. " +
+        "If the task demands concrete dates, filings, or confirmed timelines, vague 'company may IPO' / 'eyes listing' stories WITHOUT a specific date or named regulatory filing must be match=false or at most confidence medium (never high). " +
+        "Do not treat crypto tokens or unrelated stocks named 'moonshot' as matches for Chinese AI company news.",
     },
     {
       role: "user",

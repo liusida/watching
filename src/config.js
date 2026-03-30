@@ -24,7 +24,6 @@ function getConfig() {
     dbPath: process.env.DB_PATH || path.join(rootPath, "data", "watching.db"),
     logFilePath: process.env.LOG_FILE_PATH || path.join(rootPath, "logs", "watching.log"),
     baileysAuthPath: process.env.BAILEYS_AUTH_PATH || path.join(rootPath, "auth", "baileys"),
-    whatsappJid: process.env.WHATSAPP_JID || "",
     pollIntervalMs: numberFromEnv("POLL_INTERVAL_MS", 60_000),
     defaultEngine: process.env.SERPAPI_ENGINE || "google_news",
     defaultLocale: process.env.DEFAULT_LOCALE || "en-US",

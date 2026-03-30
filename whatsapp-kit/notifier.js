@@ -1,26 +1,9 @@
 const fs = require("fs");
 const pino = require("pino");
-const {
-  default: makeWASocket,
-  DisconnectReason,
-  fetchLatestBaileysVersion,
-  useMultiFileAuthState,
-} = require("@whiskeysockets/baileys");
-const { ensureDir } = require("../utils");
-
-function normalizeJid(rawValue) {
-  if (!rawValue) {
-    return "";
-  }
-
-  const trimmed = String(rawValue).trim();
-  if (trimmed.includes("@")) {
-    return trimmed;
-  }
-
-  const digitsOnly = trimmed.replace(/[^\d]/g, "");
-  return digitsOnly ? `${digitsOnly}@s.whatsapp.net` : "";
-}
+const { default: makeWASocket, DisconnectReason, useMultiFileAuthState } = require("@whiskeysockets/baileys");
+const { getWaWebVersion } = require("./version");
+const { normalizeJid } = require("./jid");
+const { ensureDir } = require("./ensure-dir");
 
 class BaileysNotifier {
   constructor(options = {}) {
@@ -69,7 +52,7 @@ class BaileysNotifier {
 
     this.connectPromise = (async () => {
       const { state, saveCreds } = await useMultiFileAuthState(this.authPath);
-      const { version } = await fetchLatestBaileysVersion();
+      const version = await getWaWebVersion(this.logger);
 
       return new Promise((resolve, reject) => {
         const socket = makeWASocket({
@@ -130,6 +113,32 @@ class BaileysNotifier {
     return this.connectPromise;
   }
 
+  /**
+   * Close the WhatsApp socket so short-lived CLIs (e.g. run-once) can exit without Ctrl+C.
+   * Long-running workers should call this once per tick if they construct a new notifier each time.
+   */
+  async disconnect() {
+    if (this.dryRun) {
+      return;
+    }
+    if (!this.socket) {
+      this.connected = false;
+      this.connectPromise = null;
+      return;
+    }
+    try {
+      if (typeof this.socket.end === "function") {
+        this.socket.end(undefined);
+      }
+    } catch (err) {
+      this.logger.debug("Baileys disconnect error (ignored).", { error: err.message });
+    } finally {
+      this.socket = null;
+      this.connected = false;
+      this.connectPromise = null;
+    }
+  }
+
   buildMessage(task, candidate, decision) {
     const lines = [
       `Watching task: ${task.name}`,
@@ -152,7 +161,7 @@ class BaileysNotifier {
   async send(task, candidate, decision) {
     const destination = normalizeJid(task.notify?.destination || this.defaultDestination);
     if (!destination) {
-      throw new Error("No WhatsApp destination configured. Set WHATSAPP_JID or task.notify.destination.");
+      throw new Error("No WhatsApp destination configured. Set task.notify.destination in config/tasks.json (or add-task --destination).");
     }
 
     const message = this.buildMessage(task, candidate, decision);
@@ -191,7 +200,4 @@ class BaileysNotifier {
   }
 }
 
-module.exports = {
-  BaileysNotifier,
-  normalizeJid,
-};
+module.exports = { BaileysNotifier };

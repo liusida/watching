@@ -1,0 +1,11 @@
+{
+  "name": "whatsapp-kit-embedded",
+  "private": true,
+  "description": "Embedded copy-paste module — not published. See README.md.",
+  "main": "index.js",
+  "peerDependencies": {
+    "@whiskeysockets/baileys": "^7.0.0-rc.9",
+    "pino": "^9.0.0 || ^10.0.0",
+    "qrcode": "^1.5.0"
+  }
+}

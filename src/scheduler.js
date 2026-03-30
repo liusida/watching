@@ -1,6 +1,7 @@
 const { getLastRunForTask } = require("./repositories/tasks");
 const { isTaskDue } = require("./utils");
 const { runTask } = require("./task-runner");
+const { validateRunnableTask } = require("./validate-task");
 
 async function runDueTasks({ db, tasks, serpApiClient, openAIClient, notifier, modelName, log = console }) {
   const now = new Date();
@@ -24,6 +25,13 @@ async function runDueTasks({ db, tasks, serpApiClient, openAIClient, notifier, m
         schedule: task.schedule,
         lastRunAt: lastRun?.started_at || null,
       });
+      continue;
+    }
+
+    try {
+      validateRunnableTask(task);
+    } catch (err) {
+      log.error(err.message);
       continue;
     }
 
