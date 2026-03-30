@@ -1,0 +1,9 @@
+.env
+node_modules/
+data/
+auth/
+tmp/
+logs/
+*.db
+*.sqlite
+*.sqlite3

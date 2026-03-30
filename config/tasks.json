@@ -1,0 +1,44 @@
+{
+  "tasks": [
+    {
+      "name": "kimi-ipo-date",
+      "goal": "Notify me when there is credible news about Kimi or Moonshot AI IPO timing, official filing schedule, listing exchange, or prospectus progress.",
+      "schedule": "every 12 hours",
+      "criteria": "Only notify when the result strongly suggests an IPO timeline, listing plan, exchange filing, prospectus, or official company statement. Suppress weak speculation.",
+      "locale": "en-US",
+      "enabled": true,
+      "queryPlan": {
+        "engine": "google_news",
+        "hl": "en",
+        "gl": "us",
+        "maxResultsPerQuery": 5,
+        "summary": "This search plan focuses on acquiring credible news related to the IPO timeline of Kimi or Moonshot AI. The queries are tailored to capture announcements about filing schedules, listing exchanges, and official statements that are specific to this context.",
+        "queries": [
+          {
+            "query": "Kimi IPO date announcement",
+            "reason": "To capture any official announcements regarding the IPO date."
+          },
+          {
+            "query": "Moonshot AI IPO filing timeline",
+            "reason": "To track any updates related to the IPO filing schedule for Moonshot AI."
+          },
+          {
+            "query": "Kimi IPO prospectus news",
+            "reason": "To find news specifically mentioning the prospectus, indicating progress on the IPO."
+          },
+          {
+            "query": "Moonshot AI listing exchange news",
+            "reason": "To identify information about which exchange Moonshot AI may list on."
+          },
+          {
+            "query": "Kimi IPO official statement",
+            "reason": "To collect any direct statements from the company regarding their IPO plans."
+          }
+        ]
+      },
+      "notify": {
+        "destination": ""
+      }
+    }
+  ]
+}
